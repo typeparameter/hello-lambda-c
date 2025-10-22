@@ -10,7 +10,7 @@ app.get("/2018-06-01/runtime/invocation/next", (_, res) => {
 
 	res.set("Lambda-Runtime-Aws-Request-Id", requestId);
 	res.set("Lambda-Runtime-Trace-Id", crypto.randomUUID());
-	res.send("");
+	res.send("{}");
 });
 
 app.post("/2018-06-01/runtime/invocation/:requestId/error", (req, res) => {
