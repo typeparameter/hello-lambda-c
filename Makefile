@@ -1,8 +1,9 @@
 # Metadata
-TARGET   = bootstrap
-PLATFORM = linux/amd64
-CC       = gcc
-CFLAGS   = -std=c89 -pedantic -Wall -Iinclude
+TARGET          = bootstrap
+IMAGE_BUILDER   = docker
+TARGET_PLATFORM = linux/amd64
+CC              = gcc
+CFLAGS          = -std=c89 -pedantic -Wall -Iinclude
 
 # Directories
 SRCDIR   = src
@@ -29,13 +30,14 @@ $(OBJECTS): $(OBJDIR)/%.o : $(SRCDIR)/%.c
 	@$(CC) $(CFLAGS) -c $< -o $@
 
 zip: clean
-	@echo "Building binary for platform $(PLATFORM)"
-	@IMAGE=$$(docker build --platform=$(PLATFORM) -q .); \
-		CONTAINER=$$(docker create --platform=$(PLATFORM) $$IMAGE); \
-		docker cp -q $$CONTAINER:/workspace/build build; \
-		docker rm $$CONTAINER > /dev/null
+	@echo "Building binary for platform $(TARGET_PLATFORM)"
+	@$(IMAGE_BUILDER) build \
+		--platform $(TARGET_PLATFORM) \
+		--target artifact \
+		--output type=local,platform-split=false,dest=$(BUILDDIR) \
+		.
 	@echo "Creating $(BUILDDIR)/lambda.zip"
-	@zip -jq $(BUILDDIR)/lambda.zip build/bin/bootstrap
+	@zip -jq $(BUILDDIR)/lambda.zip $(BUILDDIR)/bin/bootstrap
 
 clean:
 	rm -rf $(BUILDDIR)
