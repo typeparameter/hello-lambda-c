@@ -1,92 +1,55 @@
-#define _POSIX_C_SOURCE 200809L
+#define _POSIX_C_SOURCE 199309L
 
-#include <stdbool.h>
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <curl/curl.h>
 
+#include "http.h"
 #include "lambda.h"
 
-static size_t write_res_cb(char *data, size_t size, size_t nmemb, struct buffer *res);
-static size_t drop_res_cb(char *data, size_t size, size_t nmemb, struct buffer *res);
+int main(void) {
+	int res;
+	const char *api_host;
+	char path[512];
 
-int main() {
-	CURL *curl;
-	int res = curl_global_init(CURL_GLOBAL_NOTHING);
-	if (res != EXIT_SUCCESS) return res;
+	api_host = getenv("AWS_LAMBDA_RUNTIME_API");
 
-	const char *api_host = getenv("AWS_LAMBDA_RUNTIME_API");
+	for (;;) {
+		struct buffer event;
+		struct buffer response;
+		struct lambda_context context;
+		struct http_response http_res;
+		char *request_id;
 
-	char url[512];
-	struct curl_header *header;
+		event.data = NULL;
+		event.len = 0;
+		response.data = NULL;
+		response.len = 0;
 
-	curl = curl_easy_init();
-	while (true) {
-		struct buffer event = { .data = NULL, .len = 0 };
-		struct buffer response = { .data = NULL, .len = 0 };
-		curl_easy_reset(curl);
-
-		snprintf(url, sizeof(url), "http://%s/2018-06-01/runtime/invocation/next", api_host);
-		curl_easy_setopt(curl, CURLOPT_URL, url);
-		curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1);
-		curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_res_cb);
-		curl_easy_setopt(curl, CURLOPT_WRITEDATA, &event);
-		curl_easy_perform(curl);
-
-		curl_easy_header(curl, "Lambda-Runtime-Aws-Request-Id", 0, CURLH_HEADER, -1, &header);
-		char *request_id = strdup(header->value);
-
-		curl_easy_header(curl, "Lambda-Runtime-Trace-Id", 0, CURLH_HEADER, -1, &header);
-		char *trace_id = strdup(header->value);
-		setenv("_X_AMZN_TRACE_ID", trace_id, 1);
-
-		curl_easy_reset(curl);
-
-		struct lambda_context context = {
-			.aws_request_id = request_id
-		};
+		http_get(api_host, "/2018-06-01/runtime/invocation/next", &http_res);
+		http_response_header(&http_res, "Lambda-Runtime-Aws-Request-Id", &request_id);
+		context.aws_request_id = request_id;
+		event = http_res.body;
+		http_res.body.data = NULL;
+		http_res.body.len = 0;
+		http_response_destroy(&http_res);
 
 		res = handler(&event, &context, &response);
 		if (res != EXIT_SUCCESS) {
-			snprintf(url, sizeof(url), "http://%s/2018-06-01/runtime/invocation/%s/error", api_host, request_id);
-			curl_easy_setopt(curl, CURLOPT_POST, 1);
+			sprintf(path, "/2018-06-01/runtime/invocation/%s/error", request_id);
+			http_post(api_host, path, NULL, &http_res);
+			http_response_destroy(&http_res);
 		} else {
-			snprintf(url, sizeof(url), "http://%s/2018-06-01/runtime/invocation/%s/response", api_host, request_id);
-			curl_easy_setopt(curl, CURLOPT_POSTFIELDS, response.data);
-			curl_easy_setopt(curl, CURLOPT_POSTFIELDSIZE, response.len);
+			sprintf(path, "/2018-06-01/runtime/invocation/%s/response", request_id);
+			http_post(api_host, path, &response, &http_res);
+			http_response_destroy(&http_res);
 		}
 
-		curl_easy_setopt(curl, CURLOPT_URL, url);
-		curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, drop_res_cb);
-		curl_easy_perform(curl);
-
 		free(request_id);
-		free(trace_id);
 		free(event.data);
 		free(response.data);
 	}
 
-	curl_easy_cleanup(curl);
-	curl_global_cleanup();
-
-	return EXIT_SUCCESS;
-}
-
-static size_t write_res_cb(char *data, size_t size, size_t nmemb, struct buffer *res) {
-	size_t realsize = size * nmemb;
-
-	char *tmp = realloc(res->data, res->len + realsize);
-	if (!tmp) return 0;
-	res->data = tmp;
-
-	memcpy(res->data + res->len, data, realsize);
-	res->len += realsize;
-
-	return realsize;
-}
-
-static size_t drop_res_cb(char *data, size_t size, size_t nmemb, struct buffer *res) {
-	return size * nmemb;
+	return 0;
 }

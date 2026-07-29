@@ -2,7 +2,7 @@ import * as crypto from "node:crypto";
 import express from "express";
 
 const app = express();
-app.use(express.text({ type: "*/*" }));
+app.use(express.text({ type: () => true }));
 
 app.get("/2018-06-01/runtime/invocation/next", (_, res) => {
 	const requestId = crypto.randomUUID();
