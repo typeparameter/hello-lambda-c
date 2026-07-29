@@ -2,8 +2,7 @@
 TARGET   = bootstrap
 PLATFORM = linux/amd64
 CC       = gcc
-CFLAGS   = -std=c99 -Wall -Iinclude
-LDFLAGS  = -lcurl
+CFLAGS   = -std=c89 -pedantic -Wall -Iinclude
 
 # Directories
 SRCDIR   = src
@@ -22,7 +21,7 @@ $(TARGET): $(BINDIR)/$(TARGET)
 $(BINDIR)/$(TARGET): $(OBJECTS)
 	@mkdir -p $(BINDIR)
 	@echo "Linking $@"
-	@$(CC) $(OBJECTS) $(LDFLAGS) -o $@
+	@$(CC) $(OBJECTS) -o $@
 
 $(OBJECTS): $(OBJDIR)/%.o : $(SRCDIR)/%.c
 	@mkdir -p $(OBJDIR)
