@@ -24,7 +24,7 @@ $(BINDIR)/$(TARGET): $(OBJECTS)
 	@echo "Linking $@"
 	@$(CC) $(OBJECTS) -o $@
 
-$(OBJECTS): $(OBJDIR)/%.o : $(SRCDIR)/%.c
+$(OBJECTS): $(OBJDIR)/%.o: $(SRCDIR)/%.c
 	@mkdir -p $(OBJDIR)
 	@echo "Compiling $<"
 	@$(CC) $(CFLAGS) -c $< -o $@
