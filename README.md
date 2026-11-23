@@ -18,14 +18,13 @@ Absolutely not. But it works.
 
 ### How is this tested?
 
-There is a mock AWS Lambda runtime API implemented in `api.js` using Express.js.
+There is a mock AWS Lambda runtime API implemented in `api.js` using Node.js.
 
 #### Process
 
 1. Build the binary: `make bootstrap`
-2. Install express: `npm install`
-3. Run the mock API: `node api.js`
-4. Run the Lambda: `AWS_LAMBDA_RUNTIME_API=localhost:8080 ./build/bin/bootstrap`
+2. Run the mock API (Node.js 24 or newer): `node api.js`
+3. Run the Lambda: `AWS_LAMBDA_RUNTIME_API=localhost:8080 ./build/bin/bootstrap`
 
 The console for the API should start flowing with logs.
 
