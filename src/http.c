@@ -79,7 +79,7 @@ int http_response_header(const struct http_response *res, const char *name,
             return -1;
 
         ptr = memchr(line_start, ':', line_end - line_start);
-        if (ptr != NULL && (ptr - line_start) == name_len &&
+        if (ptr != NULL && ptr - line_start == name_len &&
             strncmp(line_start, name, name_len) == 0) {
             val_start = ptr + 1;
             val_end = line_end;
@@ -186,7 +186,7 @@ static int connect_tcp(const struct http_request *req)
 
     host = gethostbyname(hostname);
     free(hostname);
-    if (!host)
+    if (host == NULL)
         return -1;
     if (host->h_addrtype != AF_INET)
         return -1;
@@ -258,7 +258,7 @@ static int read_response(FILE *fp, struct http_response *res)
     char *str, *new;
 
     ret = readline(fp, buf, sizeof(buf));
-    if (ret != 0)
+    if (ret < 0)
         return -1;
 
     str = strchr(buf, ' ');
@@ -273,7 +273,7 @@ static int read_response(FILE *fp, struct http_response *res)
 
     for (;;) {
         ret = readline(fp, buf, sizeof(buf));
-        if (ret != 0) {
+        if (ret < 0) {
             free(res->headers.data);
             return -1;
         }
@@ -296,7 +296,7 @@ static int read_response(FILE *fp, struct http_response *res)
         }
 
         memcpy(res->headers.data + res->headers.len, buf, header_len);
-        res->headers.len = res->headers.len + header_len;
+        res->headers.len += header_len;
 
         str = strchr(buf, ':');
         if (str == NULL)
