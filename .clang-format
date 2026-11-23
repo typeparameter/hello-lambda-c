@@ -1,0 +1,12 @@
+Language: C
+ColumnLimit: 80
+IndentWidth: 4
+TabWidth: 4
+UseTab: Never
+PointerAlignment: Right
+AlignAfterOpenBracket: Align
+BinPackParameters: true
+BreakBeforeBraces: Linux
+AllowShortFunctionsOnASingleLine: Empty
+AllowShortIfStatementsOnASingleLine: Never
+AllowShortLoopsOnASingleLine: false
