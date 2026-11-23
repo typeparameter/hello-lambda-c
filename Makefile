@@ -1,31 +1,40 @@
 # Metadata
-TARGET          = bootstrap
 IMAGE_BUILDER   = docker
 TARGET_PLATFORM = linux/amd64
 CC              = gcc
+AR              = ar
 CFLAGS          = -std=c89 -pedantic -Wall -Iinclude
 
-# Directories
-SRCDIR   = src
-BUILDDIR = build
-OBJDIR   = $(BUILDDIR)/obj
-BINDIR   = $(BUILDDIR)/bin
+.PHONY: lib example zip clean
 
-# Files
-SOURCES  := $(wildcard $(SRCDIR)/*.c)
-OBJECTS  := $(SOURCES:$(SRCDIR)/%.c=$(OBJDIR)/%.o)
+lib: build/lib/liblambda.a
 
-.PHONY: clean
+example: build/bin/bootstrap
 
-$(TARGET): $(BINDIR)/$(TARGET)
+# Library
+build/lib/liblambda.a: build/obj/http.o build/obj/runtime.o
+	@mkdir -p build/lib
+	@echo "Archiving $@"
+	@$(AR) rcs $@ build/obj/http.o build/obj/runtime.o
 
-$(BINDIR)/$(TARGET): $(OBJECTS)
-	@mkdir -p $(BINDIR)
+build/obj/http.o: src/http.c src/http.h include/lambda.h
+	@mkdir -p build/obj
+	@echo "Compiling $<"
+	@$(CC) $(CFLAGS) -c $< -o $@
+
+build/obj/runtime.o: src/runtime.c src/http.h include/lambda.h
+	@mkdir -p build/obj
+	@echo "Compiling $<"
+	@$(CC) $(CFLAGS) -c $< -o $@
+
+# Example
+build/bin/bootstrap: build/obj/example/main.o build/lib/liblambda.a
+	@mkdir -p build/bin
 	@echo "Linking $@"
-	@$(CC) $(OBJECTS) -o $@
+	@$(CC) build/obj/example/main.o -Lbuild/lib -llambda -o $@
 
-$(OBJECTS): $(OBJDIR)/%.o: $(SRCDIR)/%.c
-	@mkdir -p $(OBJDIR)
+build/obj/example/main.o: examples/hello/main.c include/lambda.h
+	@mkdir -p build/obj/example
 	@echo "Compiling $<"
 	@$(CC) $(CFLAGS) -c $< -o $@
 
@@ -34,11 +43,11 @@ zip: clean
 	@$(IMAGE_BUILDER) build \
 		--platform $(TARGET_PLATFORM) \
 		--target artifact \
-		--output type=local,platform-split=false,dest=$(BUILDDIR) \
+		--output type=local,platform-split=false,dest=build \
 		.
-	@echo "Creating $(BUILDDIR)/lambda.zip"
-	@zip -jq $(BUILDDIR)/lambda.zip $(BUILDDIR)/bin/bootstrap
+	@echo "Creating build/lambda.zip"
+	@zip -jq build/lambda.zip build/bin/bootstrap
 
 clean:
-	rm -rf $(BUILDDIR)
+	rm -rf build
 	@echo "Project cleaned"

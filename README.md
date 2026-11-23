@@ -22,7 +22,7 @@ There is a mock AWS Lambda runtime API implemented in `api.js` using Node.js.
 
 #### Process
 
-1. Build the binary: `make bootstrap`
+1. Build the binary: `make example`
 2. Run the mock API (Node.js 24 or newer): `node api.js`
 3. Run the Lambda: `AWS_LAMBDA_RUNTIME_API=localhost:8080 ./build/bin/bootstrap`
 

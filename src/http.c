@@ -14,7 +14,7 @@ struct http_request {
     const char *method;
     const char *host;
     const char *path;
-    const struct buffer *body;
+    const struct lambda_buffer *body;
 };
 
 static int send_request(const struct http_request *req,
@@ -24,7 +24,8 @@ static int write_request(FILE *fp, const struct http_request *req);
 static int read_response(FILE *fp, struct http_response *res);
 static int readline(FILE *fp, char *buffer, size_t size);
 
-int http_get(const char *host, const char *path, struct http_response *res)
+int lambda__http_get(const char *host, const char *path,
+                     struct http_response *res)
 {
     struct http_request req;
 
@@ -36,8 +37,9 @@ int http_get(const char *host, const char *path, struct http_response *res)
     return send_request(&req, res);
 }
 
-int http_post(const char *host, const char *path, const struct buffer *body,
-              struct http_response *res)
+int lambda__http_post(const char *host, const char *path,
+                      const struct lambda_buffer *body,
+                      struct http_response *res)
 {
     struct http_request req;
 
@@ -49,8 +51,8 @@ int http_post(const char *host, const char *path, const struct buffer *body,
     return send_request(&req, res);
 }
 
-int http_response_header(const struct http_response *res, const char *name,
-                         char **value)
+int lambda__http_response_header(const struct http_response *res,
+                                 const char *name, char **value)
 {
     const char *ptr, *body_end;
     const char *line_start, *line_end;
@@ -109,7 +111,7 @@ int http_response_header(const struct http_response *res, const char *name,
     return -1;
 }
 
-void http_response_destroy(struct http_response *res)
+void lambda__http_response_destroy(struct http_response *res)
 {
     free(res->headers.data);
     res->headers.data = NULL;

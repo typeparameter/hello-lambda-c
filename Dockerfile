@@ -4,9 +4,9 @@ RUN yum install gcc make -y
 
 WORKDIR /workspace
 COPY . .
-RUN make bootstrap
+RUN make example
 
 
 FROM scratch AS artifact
 
-COPY --from=builder /workspace/build /
+COPY --from=builder /workspace/build/bin/bootstrap /bin/bootstrap
