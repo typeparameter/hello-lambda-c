@@ -29,5 +29,5 @@ Absolutely not. But it works.
 
 Very fast.
 
-![screenshot of successful invocation of the Lambda function showing a duration of 3.15ms and an init duration of 71.18ms](media/screenshot.png)
+![screenshot of successful invocation of the Lambda function showing a duration of 1.13ms and an init duration of 7.05ms](media/screenshot.png)
 
