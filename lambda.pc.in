@@ -1,0 +1,9 @@
+prefix=@PREFIX@
+libdir=${prefix}/lib
+includedir=${prefix}/include
+
+Name: lambda
+Description: AWS Lambda runtime library
+Version: 0
+Libs: -L${libdir} -llambda
+Cflags: -I${includedir}
