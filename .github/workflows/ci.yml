@@ -12,14 +12,27 @@ jobs:
       - uses: actions/checkout@v7
       - run: clang-format --dry-run --Werror $(git ls-files '*.c' '*.h')
 
-  build-and-test:
+  docker:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-node@v7
         with:
           node-version: 26
-      - name: Build
-        run: make zip
-      - name: Test
-        run: node --test
+      - run: make zip
+      - run: node --test
+
+  install:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 26
+      - run: make install PREFIX="$RUNNER_TEMP/prefix"
+      - run: cmake -S examples/hello -B "$RUNNER_TEMP/hello" && cmake --build "$RUNNER_TEMP/hello"
+        env:
+          PKG_CONFIG_PATH: ${{ runner.temp }}/prefix/lib/pkgconfig
+      - run: node --test
+        env:
+          BOOTSTRAP: ${{ runner.temp }}/hello/bootstrap

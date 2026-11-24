@@ -1,11 +1,12 @@
 # Metadata
 IMAGE_BUILDER   = docker
 TARGET_PLATFORM = linux/amd64
+PREFIX          = /usr/local
 CC              = gcc
 AR              = ar
 CFLAGS          = -std=c89 -pedantic -Wall -Iinclude
 
-.PHONY: lib example zip clean
+.PHONY: lib example install zip clean
 
 lib: build/lib/liblambda.a
 
@@ -37,6 +38,14 @@ build/obj/example/main.o: examples/hello/main.c include/lambda.h
 	@mkdir -p build/obj/example
 	@echo "Compiling $<"
 	@$(CC) $(CFLAGS) -c $< -o $@
+
+install: lib
+	@echo "Installing to $(DESTDIR)$(PREFIX)"
+	@install -d $(DESTDIR)$(PREFIX)/lib/pkgconfig $(DESTDIR)$(PREFIX)/include
+	@install -p -m 644 build/lib/liblambda.a $(DESTDIR)$(PREFIX)/lib
+	@install -p -m 644 include/lambda.h $(DESTDIR)$(PREFIX)/include
+	@sed 's|@PREFIX@|$(PREFIX)|' lambda.pc.in \
+		> $(DESTDIR)$(PREFIX)/lib/pkgconfig/lambda.pc
 
 zip: clean
 	@echo "Building binary for platform $(TARGET_PLATFORM)"
