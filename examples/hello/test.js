@@ -6,7 +6,8 @@ import { createServer } from "node:http";
 import { text } from "node:stream/consumers";
 import { test } from "node:test";
 
-const bootstrap = process.env.BOOTSTRAP ?? "./build/bin/bootstrap";
+const bootstrap = process.env.BOOTSTRAP;
+assert.ok(bootstrap, "set BOOTSTRAP to the path of the binary to test");
 
 function route(method, pathname, handler) {
   return { method, pattern: new URLPattern({ pathname }), handler };
