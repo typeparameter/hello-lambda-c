@@ -4,6 +4,6 @@ includedir=${prefix}/include
 
 Name: lambda
 Description: AWS Lambda runtime library
-Version: 0
+Version: 1.0.0
 Libs: -L${libdir} -llambda
 Cflags: -I${includedir}
