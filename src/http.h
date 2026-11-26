@@ -9,6 +9,7 @@ struct http_response {
     struct lambda_buffer body;
 };
 
+/* On failure, res has nothing to destroy. */
 int lambda__http_get(const char *host, const char *path,
                      struct http_response *res);
 int lambda__http_post(const char *host, const char *path,

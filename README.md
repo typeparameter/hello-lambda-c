@@ -14,7 +14,7 @@ I believe AWS Lambda is one of Amazon's most significant innovations since the c
 
 ### Is the code safe?
 
-Absolutely not. But it works.
+Safe enough. It assumes the Lambda Runtime API won't try to break it.
 
 ### How is this tested?
 
