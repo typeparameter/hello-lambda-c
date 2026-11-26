@@ -59,11 +59,12 @@ int lambda__http_response_header(const struct http_response *res,
     const char *val_start, *val_end;
     size_t name_len, val_len;
 
+    *value = NULL;
+
     if (res->headers.len == 0)
         return -1;
 
     name_len = strlen(name);
-    *value = NULL;
 
     line_start = res->headers.data;
     body_end = line_start + res->headers.len;
